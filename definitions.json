@@ -1,0 +1,116 @@
+{
+  "rabbit_version": "3.8.9",
+  "users": [
+    {
+      "name": "guest",
+      "password_hash": "bQK1t2KmRLhyibx+imNlcDnQhawGloDK20DpU1imrniKhJiQ",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator"
+    },
+    {
+      "name": "microservice_user",
+      "password_hash": "bQK1t2KmRLhyibx+imNlcDnQhawGloDK20DpU1imrniKhJiQ",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator"
+    },
+    {
+      "name": "client_user",
+      "password_hash": "bQK1t2KmRLhyibx+imNlcDnQhawGloDK20DpU1imrniKhJiQ",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "guest",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "microservice_user",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "client_user",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "emails_dead_letter_exchange",
+      "vhost": "/",
+      "type": "x-delayed-message",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {
+        "x-delayed-type": "direct"
+      }
+    },
+    {
+      "name": "emails_delayed_exchange",
+      "vhost": "/",
+      "type": "x-delayed-message",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {
+        "x-delayed-type": "direct"
+      }
+    }
+  ],
+  "queues": [
+    {
+      "name": "emails_queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "emails_dead_letter_exchange",
+        "x-dead-letter-routing-key": "emails_dead_letter"
+      }
+    },
+    {
+      "name": "emails_dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "emails_delayed_exchange",
+        "x-dead-letter-routing-key": "emails_dead_letter",
+        "x-message-ttl": 30000
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "source": "emails_dead_letter_exchange",
+      "vhost": "/",
+      "destination": "emails_dlq",
+      "destination_type": "queue",
+      "routing_key": "emails_dead_letter",
+      "arguments": {}
+    },
+    {
+      "source": "emails_delayed_exchange",
+      "vhost": "/",
+      "destination": "emails_queue",
+      "destination_type": "queue",
+      "routing_key": "emails_dead_letter",
+      "arguments": {}
+    }
+  ]
+}
